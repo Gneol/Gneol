@@ -12,7 +12,16 @@ stop_running_gneol() {
   if [ -n "$pids" ]; then
     echo "⚠️  Gneol is currently running (PID(s): $pids)."
     echo "   To avoid file locks during installation, running instances should be stopped."
-    read -p "   Stop all running gneol processes? [Y/n] " -r response
+    if [ -t 0 ]; then
+      read -p "   Stop all running gneol processes? [Y/n] " -r response
+    elif [ -r /dev/tty ] && [ -w /dev/tty ]; then
+      # stdin is a pipe (curl | bash) - prompt on the real terminal instead,
+      # with a timeout so a headless/CI run can never hang forever.
+      read -t 15 -p "   Stop all running gneol processes? [Y/n] " -r response < /dev/tty || response=""
+    else
+      echo "   Non-interactive install detected; proceeding to stop running processes."
+      response="y"
+    fi
     case "$response" in
       [nN]|[nN][oO])
         echo "❌ Installation aborted. Please stop gneol manually and try again."
@@ -87,24 +96,48 @@ stop_running_gneol
 
 echo ""
 
-TMP_ARCHIVE="/tmp/gneol-${PLATFORM}.tar.gz"
+TMP_ARCHIVE="${TMPDIR:-/tmp}/gneol-${PLATFORM}-$$.tar.gz"
+trap 'rm -f "$TMP_ARCHIVE"' EXIT
+
+# Create install directory if needed
+if ! mkdir -p "$INSTALL_DIR" 2>/dev/null; then
+  echo "❌ Cannot create install directory: $INSTALL_DIR"
+  echo "   Re-run with sudo, or pick a writable dir: $0 --dir "$HOME/.local/bin""
+  exit 1
+fi
+if [ ! -w "$INSTALL_DIR" ]; then
+  echo "❌ No write permission for $INSTALL_DIR"
+  echo "   Re-run with sudo, or pick a writable dir: $0 --dir "$HOME/.local/bin""
+  exit 1
+fi
 
 # Download archive
 ARCHIVE_URL="$BASE_URL/$ARCHIVE"
 echo "  → $ARCHIVE"
-curl -sSL "$ARCHIVE_URL" -o "$TMP_ARCHIVE"
+if ! curl -fsSL "$ARCHIVE_URL" -o "$TMP_ARCHIVE"; then
+  echo "❌ Failed to download $ARCHIVE_URL"
+  echo "   Verify release "$VERSION" exists and ships $ARCHIVE."
+  echo "   Releases: https://github.com/$REPO/releases"
+  exit 1
+fi
 
-# Create install directory if needed
-mkdir -p "$INSTALL_DIR"
+# Validate the download before touching the install dir
+if ! tar -tzf "$TMP_ARCHIVE" >/dev/null 2>&1; then
+  echo "❌ Downloaded file is not a valid .tar.gz archive: $ARCHIVE"
+  exit 1
+fi
 
 # Extract archive into install directory
 tar -xzf "$TMP_ARCHIVE" -C "$INSTALL_DIR"
 
+# Verify the binary actually landed
+if [ ! -f "$INSTALL_DIR/gneol" ]; then
+  echo "❌ Extraction finished but no 'gneol' binary found in $INSTALL_DIR"
+  exit 1
+fi
+
 # Set permissions
 chmod +x "$INSTALL_DIR/gneol"
-
-# Clean up
-rm -f "$TMP_ARCHIVE"
 
 echo ""
 echo "✅ Gneol installed!"

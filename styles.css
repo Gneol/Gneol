@@ -451,3 +451,23 @@ pre {
     padding: 56px 16px;
   }
 }
+
+/* --- sdk --- */
+.sdk-terminals {
+  display: grid;
+  gap: 16px;
+}
+
+.sdk-accessors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.sdk-accessors code {
+  color: var(--accent-2);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  font-size: 0.76rem;
+}

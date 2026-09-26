@@ -15,3 +15,5 @@ package-release.mjs
 .ttc_id.txt
 debug.json
 msg_sys.txt
+*.py
+*.bak
