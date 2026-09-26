@@ -190,7 +190,8 @@
         <a href="#architecture">3. Architecture</a>
         <a href="#path-resolution">4. Path Resolution</a>
         <a href="#installation-deployment">5. Installation &amp; Deployment</a>
-        <a href="#directives">6. Directives</a>
+        <a href="#env-vars">6. Environment Variables</a>
+        <a href="#directives">7. Directives</a>
         <a href="#program">program()</a>
         <a href="#model">model()</a>
         <a href="#subagent">subagent()</a>
@@ -202,7 +203,7 @@
         <a href="#mcp">mcp() — MCP Servers</a>
         <a href="#built-in-events">8. Built-in Events</a>
         <a href="#troubleshooting">9. Troubleshooting</a>
-        <a href="#complete-example">10. Complete Example
+        <a href="#complete-example">10. Complete Example</a>
         <a href="#sdk">11. Programmatic SDK (gneol-sdk)</a>
       </nav>
 
@@ -324,34 +325,33 @@ gneol deploy -f path/to/file.gneol -w       # watch the file and redeploy on sav
 
 <div class="doc-section" id="sec-env-vars">
 <h2 id="env-vars">Environment Variables</h2>
-There are three ways to provide environment variables and API keys to your Gneol programs:
+        <p>There are three ways to provide environment variables and API keys to your Gneol programs:</p>
 
-<h3>1. Global Secret Store (gneol secrets)</h3>
-Store API keys and tokens globally, encrypted on your machine:
-gneol secrets set OPENROUTER_API_KEY sk-...
+        <h3>1. Global Secret Store (gneol secrets)</h3>
+        <p>Store API keys and tokens globally, encrypted on your machine:</p>
+<pre><code>gneol secrets set OPENROUTER_API_KEY sk-...
 gneol secrets list
 gneol secrets get OPENROUTER_API_KEY
-gneol secrets delete OPENROUTER_API_KEY
-Reference keys by name in your .gneol file — no hard-coded secrets:
-model("fast-llm")
+gneol secrets delete OPENROUTER_API_KEY</code></pre>
+        <p>Reference keys by name in your <code>.gneol</code> file — no hard-coded secrets:</p>
+<pre><code>model("fast-llm")
   .provider("openrouter")
   .modelId("openai/gpt-4o-mini")
-  .apiKey("OPENROUTER_API_KEY")
+  .apiKey("OPENROUTER_API_KEY")</code></pre>
 
-<h3>2. Per-Program Env File</h3>
-Point your program at a .env file on disk. Variables are injected into the program environment:
+        <h3>2. Per-Program Env File</h3>
+        <p>Point your program at a <code>.env</code> file on disk. Variables are injected into the program environment:</p>
+<pre><code>program("My App")
+  .env(".env")</code></pre>
+        <p>If omitted, Gneol auto-detects a <code>.env</code> file in the program directory.</p>
 
-program("My App")
-  .env(".env")
+        <h3>3. Shell Environment</h3>
+        <p>Export variables in your terminal shell before running Gneol — available to all programs:</p>
+<pre><code>export OPENROUTER_API_KEY=sk-...
+gneol deploy -f hello.gneol</code></pre>
 
-If omitted, Gneol auto-detects a .env file in the program directory.
-
-<h3>3. Shell Environment</h3>
-Export variables in your terminal shell before running Gneol — available to all programs:
-export OPENROUTER_API_KEY=sk-...
-gneol deploy -f hello.gneol
-
-
+        
+</div>
 <div class="doc-section" id="sec-directives">
 <h2 id="directives">
 Directives</h2>
@@ -507,7 +507,7 @@ model("shared-model")
           <tr><td><code>.script("path")</code></td><td>Path to the worker script (relative or absolute).</td></tr>
           <tr><td><code>.description("text")</code></td><td>Human-readable description of the module.</td></tr>
         </table>
-        <p>Worker scripts are written with the Gneol SDK (<code>gneol-sdk</code>, npm). See the SDK documentation for how to define tools.</p>
+        <p>Worker scripts are written with the Gneol SDK (<code>gneol-sdk</code>, npm). See <a href="#sdk">Programmatic SDK — Custom tool scripts</a> for how to define tools.</p>
         <p>After install, tools are available as <code>tool.&lt;ModuleName&gt;.&lt;toolName&gt;()</code>. Action logs from <code>action()</code> are forwarded to the session stream.</p>
 <pre><code>tool("CustomTool")
   .script("./custom_tool.js")</code></pre>
@@ -572,47 +572,6 @@ Troubleshooting</h2>
         
 </div>
 
-<div class="doc-section" id="sec-sdk">
-<h2 id="sdk">Programmatic SDK (gneol-sdk)</h2>
-For Node.js / TypeScript integration, use the official gneol-sdk package to programmatically generate and deploy .gneol files and modules.
-
-<h3>Installation</h3>
-npm install gneol-sdk
-
-<h3>Building Programs Programmatically</h3>
-import { Program, Module, z } from "gneol-sdk";
-
-// Define program AST
-const program = new Program("support-triage");
-program.header.model("eagle-eye");
-
-// Attach subagents & custom tools
-await program.sentinels.create({
-  name: "TriageBot",
-  model: "eagle-eye",
-  description: "Triages incoming support issues"
-});
-
-// Save program to file
-await program.save("triage.gneol");
-
-<h3>Building Custom Modules / Tools</h3>
-import { Module } from "gneol-sdk";
-import { z } from "zod";
-
-const mod = new Module("MyTool");
-mod.tool({
-  name: "myFunc",
-  description: "Does something useful",
-  parameters: z.object({ input: z.string() }),
-  output: z.object({ result: z.string() }),
-  func: async (args) => {
-    return { result: `Hello ${args.input}` };
-  }
-});
-mod.parse();
-
-
 <div class="doc-section" id="sec-complete-example">
 <h2 id="complete-example">
 Complete Example</h2>
@@ -670,6 +629,170 @@ at("every:1min")
   .do("CPU threshold exceeded.")
   .max(5)</code></pre>
       
+</div>
+
+<div class="doc-section" id="sec-sdk">
+<h2 id="sdk">Programmatic SDK (gneol-sdk)</h2>
+        <p>The <a href="https://www.npmjs.com/package/gneol-sdk" target="_blank" rel="noopener"><code>gneol-sdk</code></a> package lets you create, edit, compile, and deploy <code>.gneol</code> programs from TypeScript or JavaScript. Instead of writing raw script files, you compose a program from a typed API — then compile it to <code>.gneol</code> and deploy with the Gneol CLI.</p>
+
+        <h3>Prerequisites</h3>
+        <ul>
+          <li><strong>Node.js</strong> v16 or later.</li>
+          <li><strong>Gneol CLI</strong> — required for <code>deploy()</code>. Gneol ships as a single self-contained binary (no npm package):</li>
+        </ul>
+<pre><code>curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash</code></pre>
+
+        <h3>Installation</h3>
+<pre><code>npm install gneol-sdk</code></pre>
+
+        <h3>Quick start</h3>
+        <p>Create a program, compile it, inspect the output, and deploy:</p>
+<pre><code>import { Gneol } from 'gneol-sdk';
+
+// 1. Initialize the SDK — the directory is created automatically
+const sdk = new Gneol({ store: 'file', path: './programs' });
+
+// 2. Create the program, then fetch a handle to it
+await sdk.program.create({ id: 'support-triage', name: 'Support Triage' });
+const program = await sdk.program.fetch('support-triage');
+
+// 3. Set the program header
+program.header.set({ name: 'Support Triage', model: 'billing-model' });
+
+// 4. Declare a model binding
+await program.models.create({
+  name: 'billing-model',
+  provider: 'openrouter',
+  modelId: 'openai/gpt-4o-mini',
+  apiKey: 'OPENROUTER_API_KEY',
+  temperature: 0.1,
+  maxTokens: 1024,
+});
+
+// 5. Declare a subagent
+await program.subagents.create({
+  name: 'BillingBot',
+  model: 'billing-model',
+  description: 'Handles payment, refund, and invoice inquiries.',
+});
+
+// 6. Route a scheduled trigger to it
+await program.triggers.create({
+  timeExpr: 'every:30min',
+  do: ['Run escalation check for tickets older than 4 hours.'],
+  subagent: 'BillingBot',
+  max: 48, // 48 runs x 30min = 24 hours of coverage
+});
+
+// 7. Inspect, persist, and deploy
+console.log(program.compile()); // .gneol source
+await program.save();            // persist to the store
+await program.deploy();          // write the file and run gneol deploy -f</code></pre>
+
+        <h3>Directive accessors</h3>
+        <p>Every major directive in this reference is an accessor on the program object, so you can create, list, update, and delete them as objects instead of editing script text by hand. Subagents compile to <code>subagent()</code> directives, triggers to <code>at()</code> / <code>on()</code>.</p>
+        <table>
+          <tr><th>Directive</th><th>SDK accessor</th><th>Key methods</th></tr>
+          <tr><td>Header</td><td><code>program.header</code></td><td><code>.set()</code>, <code>.get()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Model</td><td><code>program.models</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
+          <tr><td>Subagent</td><td><code>program.subagents</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
+          <tr><td>Summarization</td><td><code>program.summarizations</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
+          <tr><td>Tool</td><td><code>program.tools</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
+          <tr><td>MCP</td><td><code>program.mcp</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
+          <tr><td>Trigger (<code>at()</code> / <code>on()</code>)</td><td><code>program.triggers</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
+          <tr><td>Import</td><td><code>program.imports</code></td><td><code>.add()</code>, <code>.list()</code>, <code>.remove()</code></td></tr>
+        </table>
+
+        <h3>Triggers, MCP, tools, and imports</h3>
+<pre><code>// Event-driven trigger (compiles to on()) with debounce and a pending-job threshold
+await program.triggers.create({
+  eventName: 'new-ticket',
+  do: ['Classify ticket by category.', 'Route to appropriate subagent.'],
+  maxSize: 10, // fire when 10 pending jobs accumulate
+  delay: 5,    // debounce 5 seconds
+});
+
+// Daily scheduled trigger (compiles to at())
+await program.triggers.create({ timeExpr: '9am', do: ['Generate daily support summary.'] });
+
+// MCP server — config is the MCP config as a JSON string
+await program.mcp.create({
+  name: 'account-db',
+  config: JSON.stringify({ type: 'http', url: 'https://internal-api.example.com/mcp' }),
+});
+
+// Custom tool — points at a worker script (see below)
+await program.tools.create({
+  name: 'ticket-lookup',
+  script: './tools/ticket-lookup.js',
+  description: 'Search and retrieve customer support tickets by ID or email.',
+});
+
+// Summarization
+await program.summarizations.create({
+  model: 'summary-model',
+  prompt: 'Summarize all resolved tickets in the last 24 hours.',
+});
+
+// Shared .gneol fragments
+program.imports.add('shared/escalation-policies.gneol');</code></pre>
+
+        <h3>Custom tool scripts</h3>
+        <p>The script referenced by <code>tool()</code> <code>.script()</code> (see <a href="#tool">tool() — Custom Tool Scripts</a>) is a worker module built with the SDK's <code>Module</code> class. Each <code>.tool()</code> definition declares its input/output schemas with <code>zod</code>, plus optional <code>action</code> (a log line forwarded to the session stream) and <code>auth</code> (permission gate) hooks.</p>
+<pre><code>import { Module, z } from 'gneol-sdk';
+
+const mod = new Module('TicketLookup');
+
+mod.tool({
+  name: 'myFunc',
+  description: 'Does something useful',
+  parameters: z.object({ input: z.string() }),
+  output: z.object({ result: z.string() }),
+  action: async (args) =&gt; `myFunc called with ${JSON.stringify(args)}`,
+  func: async (args) =&gt; {
+    return { result: `Hello ${args.input}` };
+  }
+});
+
+mod.parse(); // starts the worker message loop</code></pre>
+        <p>Registered tools are callable as <code>tool.&lt;ModuleName&gt;.&lt;toolName&gt;()</code> — for example <code>tool.TicketLookup.myFunc()</code>.</p>
+
+        <h3>Compiled output</h3>
+        <p><code>compile()</code> returns the same plain-text <code>.gneol</code> format documented in this reference:</p>
+<pre><code>program("Support Triage")
+  .model("billing-model")
+
+model("billing-model")
+  .provider("openrouter")
+  .modelId("openai/gpt-4o-mini")
+  .apiKey("OPENROUTER_API_KEY")
+  .temperature(0.1)
+  .maxTokens(1024)
+
+subagent("BillingBot")
+  .model("billing-model")
+  .description("Handles payment, refund, and invoice inquiries.")
+
+at("every:30min")
+  .do("Run escalation check for tickets older than 4 hours.")
+  .subagent("BillingBot")
+  .max(48)</code></pre>
+        <p><code>save()</code> persists the program to the store, and <code>deploy()</code> writes the file to disk and runs <code>gneol deploy -f &lt;file&gt;</code>. Before deploying, log <code>program.compile()</code> to inspect the generated script — it is the fastest way to catch a mistake.</p>
+
+        <h3>Storage</h3>
+        <p>With <code>store: 'file'</code>, programs are persisted as <code>&lt;id&gt;.json</code> in the configured directory. To use a custom backend (Redis, SQLite, Postgres, etc.), implement the <code>Database</code> interface and pass it straight in — a mock also lets you test SDK logic without persistence.</p>
+<pre><code>interface Database {
+  get(key: string): Promise&lt;any&gt;;
+  set(key: string, value: any): Promise&lt;void&gt;;
+  delete(key: string): Promise&lt;void&gt;;
+  list(): Promise&lt;string[]&gt;;
+}
+
+const sdk = new Gneol({ store: myDatabase });</code></pre>
+        <p>For versioning, keep your SDK source and compiled <code>.gneol</code> output under version control. To roll back, check out the previous version and re-run <code>program.deploy()</code>.</p>
+        <p><a href="https://www.npmjs.com/package/gneol-sdk" target="_blank" rel="noopener">Read the full SDK guide on npm</a></p>
+
+        
 </div>
 </main>
 
