@@ -633,12 +633,12 @@ at("every:1min")
 
 <div class="doc-section" id="sec-sdk">
 <h2 id="sdk">Programmatic SDK (gneol-sdk)</h2>
-        <p>The <a href="https://www.npmjs.com/package/gneol-sdk" target="_blank" rel="noopener"><code>gneol-sdk</code></a> package lets you create, edit, compile, and deploy <code>.gneol</code> programs from TypeScript or JavaScript. Instead of writing raw script files, you compose a program from a typed API — then compile it to <code>.gneol</code> and deploy with the Gneol CLI.</p>
+        <p>The <a href="https://www.npmjs.com/package/gneol-sdk" target="_blank" rel="noopener"><code>gneol-sdk</code></a> package builds <code>.gneol</code> programs from TypeScript or JavaScript. Instead of editing script text by hand, you compose the program through typed accessors — models, subagents, triggers, tools, MCP servers, summarization, imports — then write it to disk and deploy it with the Gneol CLI.</p>
 
         <h3>Prerequisites</h3>
         <ul>
           <li><strong>Node.js</strong> v16 or later.</li>
-          <li><strong>Gneol CLI</strong> — required for <code>deploy()</code>. Gneol ships as a single self-contained binary (no npm package):</li>
+          <li><strong>Gneol CLI</strong> on your <code>PATH</code> — the SDK shells out to it for <code>save()</code> and <code>deploy()</code>. Gneol ships as a single self-contained binary (no npm package):</li>
         </ul>
 <pre><code>curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash</code></pre>
 
@@ -646,155 +646,130 @@ at("every:1min")
 <pre><code>npm install gneol-sdk</code></pre>
 
         <h3>Quick start</h3>
-        <p>Create a program, compile it, inspect the output, and deploy:</p>
-<pre><code>import { Gneol } from 'gneol-sdk';
+        <p>Import <code>Program</code>, point it at the <code>.gneol</code> file you want to build, populate it, then <code>save()</code> and <code>deploy()</code>:</p>
+<pre><code>import { Program } from "gneol-sdk";
 
-// 1. Initialize the SDK — the directory is created automatically
-const sdk = new Gneol({ store: 'file', path: './programs' });
+// 1. Point the Program at a .gneol file (created on first save)
+const program = new Program("./support-triage.gneol");
 
-// 2. Create the program, then fetch a handle to it
-await sdk.program.create({ id: 'support-triage', name: 'Support Triage' });
-const program = await sdk.program.fetch('support-triage');
+// 2. Set the program header
+program.header.set({ name: "Support Triage", model: "fast-llm" });
 
-// 3. Set the program header
-program.header.set({ name: 'Support Triage', model: 'billing-model' });
-
-// 4. Declare a model binding
+// 3. Declare a model binding
 await program.models.create({
-  name: 'billing-model',
-  provider: 'openrouter',
-  modelId: 'openai/gpt-4o-mini',
-  apiKey: 'OPENROUTER_API_KEY',
+  name: "fast-llm",
+  provider: "openrouter",
+  modelId: "openai/gpt-4o-mini",
+  apiKey: "OPENROUTER_API_KEY",
   temperature: 0.1,
   maxTokens: 1024,
 });
 
-// 5. Declare a subagent
-await program.subagents.create({
-  name: 'BillingBot',
-  model: 'billing-model',
-  description: 'Handles payment, refund, and invoice inquiries.',
+// 4. Declare a subagent
+await program.sentinels.create({
+  name: "BillingBot",
+  model: "fast-llm",
+  description: "Handles payment, refund, and invoice inquiries.",
 });
 
-// 6. Route a scheduled trigger to it
+// 5. Route a scheduled trigger to it
 await program.triggers.create({
-  timeExpr: 'every:30min',
-  do: ['Run escalation check for tickets older than 4 hours.'],
-  subagent: 'BillingBot',
+  timeExpr: "every:30min",
+  do: ["Run escalation check for tickets older than 4 hours."],
+  sentinel: "BillingBot",
   max: 48, // 48 runs x 30min = 24 hours of coverage
 });
 
-// 7. Inspect, persist, and deploy
-console.log(program.compile()); // .gneol source
-await program.save();            // persist to the store
-await program.deploy();          // write the file and run gneol deploy -f</code></pre>
+// 6. Write the .gneol file, then deploy it
+await program.save();   // → ./support-triage.gneol
+await program.deploy(); // → gneol deploy -f ./support-triage.gneol</code></pre>
 
         <h3>Directive accessors</h3>
-        <p>Every major directive in this reference is an accessor on the program object, so you can create, list, update, and delete them as objects instead of editing script text by hand. Subagents compile to <code>subagent()</code> directives, triggers to <code>at()</code> / <code>on()</code>.</p>
+        <p>Every directive in this reference is an accessor on the <code>Program</code> instance, so you create, list, update, and delete them as objects instead of editing script text by hand. The generated output is the same plain-text <code>.gneol</code> format documented above.</p>
         <table>
-          <tr><th>Directive</th><th>SDK accessor</th><th>Key methods</th></tr>
+          <tr><th>Directive</th><th>Accessor</th><th>Methods</th></tr>
           <tr><td>Header</td><td><code>program.header</code></td><td><code>.set()</code>, <code>.get()</code>, <code>.clear()</code></td></tr>
-          <tr><td>Model</td><td><code>program.models</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
-          <tr><td>Subagent</td><td><code>program.subagents</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
-          <tr><td>Summarization</td><td><code>program.summarizations</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
-          <tr><td>Tool</td><td><code>program.tools</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
-          <tr><td>MCP</td><td><code>program.mcp</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
-          <tr><td>Trigger (<code>at()</code> / <code>on()</code>)</td><td><code>program.triggers</code></td><td><code>.create()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code></td></tr>
-          <tr><td>Import</td><td><code>program.imports</code></td><td><code>.add()</code>, <code>.list()</code>, <code>.remove()</code></td></tr>
+          <tr><td>Model</td><td><code>program.models</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Subagent</td><td><code>program.sentinels</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Summarization</td><td><code>program.summarizations</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Tool</td><td><code>program.tools</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>MCP server</td><td><code>program.mcp</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Trigger (<code>at()</code> / <code>on()</code>)</td><td><code>program.triggers</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Import</td><td><code>program.imports</code></td><td><code>.add()</code>, <code>.remove()</code>, <code>.list()</code>, <code>.clear()</code></td></tr>
         </table>
+        <p>Every accessor returns the new resource id as a string from <code>.create()</code>, and <code>.list()</code> returns each item with its <code>resourceId</code> attached.</p>
 
         <h3>Triggers, MCP, tools, and imports</h3>
-<pre><code>// Event-driven trigger (compiles to on()) with debounce and a pending-job threshold
+<pre><code>// Event-driven trigger (generates on()) with debounce and a pending-job threshold
 await program.triggers.create({
-  eventName: 'new-ticket',
-  do: ['Classify ticket by category.', 'Route to appropriate subagent.'],
-  maxSize: 10, // fire when 10 pending jobs accumulate
+  eventName: "new-ticket",
+  do: ["Classify ticket by category.", "Route to the appropriate subagent."],
+  maxSize: 10, // fire once 10 pending jobs accumulate
   delay: 5,    // debounce 5 seconds
 });
 
-// Daily scheduled trigger (compiles to at())
-await program.triggers.create({ timeExpr: '9am', do: ['Generate daily support summary.'] });
+// Daily scheduled trigger (generates at())
+await program.triggers.create({ timeExpr: "9am", do: ["Generate daily support summary."] });
 
-// MCP server — config is the MCP config as a JSON string
+// MCP server — config is the MCP config JSON as a string
 await program.mcp.create({
-  name: 'account-db',
-  config: JSON.stringify({ type: 'http', url: 'https://internal-api.example.com/mcp' }),
+  name: "account-db",
+  config: JSON.stringify({ type: "http", url: "https://internal-api.example.com/mcp" }),
 });
 
 // Custom tool — points at a worker script (see below)
 await program.tools.create({
-  name: 'ticket-lookup',
-  script: './tools/ticket-lookup.js',
-  description: 'Search and retrieve customer support tickets by ID or email.',
+  name: "ticket-lookup",
+  script: "./tools/ticket-lookup.js",
+  description: "Search and retrieve customer support tickets by ID or email.",
 });
 
 // Summarization
 await program.summarizations.create({
-  model: 'summary-model',
-  prompt: 'Summarize all resolved tickets in the last 24 hours.',
+  model: "summary-model",
+  prompt: "Summarize all resolved tickets in the last 24 hours.",
 });
 
 // Shared .gneol fragments
-program.imports.add('shared/escalation-policies.gneol');</code></pre>
+program.imports.add("shared/escalation-policies.gneol");</code></pre>
+
+        <h3>Naming: subagents and sentinels</h3>
+        <p>The SDK keeps the original TypeScript names: the accessor is <code>program.sentinels</code> and the trigger routing field is <code>sentinel</code>. In the generated <code>.gneol</code> text both appear as <code>subagent()</code>, matching the directive documented in this reference — so <code>program.sentinels.create({ name: "BillingBot", ... })</code> plus <code>{ sentinel: "BillingBot" }</code> on a trigger produces <code>subagent("BillingBot")</code> and routes the action to it.</p>
 
         <h3>Custom tool scripts</h3>
-        <p>The script referenced by <code>tool()</code> <code>.script()</code> (see <a href="#tool">tool() — Custom Tool Scripts</a>) is a worker module built with the SDK's <code>Module</code> class. Each <code>.tool()</code> definition declares its input/output schemas with <code>zod</code>, plus optional <code>action</code> (a log line forwarded to the session stream) and <code>auth</code> (permission gate) hooks.</p>
-<pre><code>import { Module, z } from 'gneol-sdk';
+        <p>The script referenced by <code>tool()</code> <code>.script()</code> (see <a href="#tool">tool() — Custom Tool Scripts</a>) is a worker module built with the SDK's <code>Module</code> class. Each <code>.tool()</code> definition declares its input and output schemas with <code>zod</code>, plus optional <code>action</code> (a log line forwarded to the session stream) and <code>auth</code> (permission gate) hooks.</p>
+<pre><code>import { Module, z } from "gneol-sdk";
 
-const mod = new Module('TicketLookup');
+const mod = new Module("TicketLookup");
 
 mod.tool({
-  name: 'myFunc',
-  description: 'Does something useful',
-  parameters: z.object({ input: z.string() }),
-  output: z.object({ result: z.string() }),
-  action: async (args) =&gt; `myFunc called with ${JSON.stringify(args)}`,
-  func: async (args) =&gt; {
-    return { result: `Hello ${args.input}` };
-  }
+  name: "lookupTicket",
+  description: "Retrieve a support ticket by ID.",
+  parameters: z.object({ ticketId: z.string() }),
+  output: z.object({ subject: z.string(), status: z.string() }),
+  auth: async () =&gt; true,
+  action: async (args) =&gt; `lookupTicket ${args.ticketId}`,
+  func: async (args) =&gt; ({ subject: "Refund not received", status: "open" }),
 });
 
 mod.parse(); // starts the worker message loop</code></pre>
-        <p>Registered tools are callable as <code>tool.&lt;ModuleName&gt;.&lt;toolName&gt;()</code> — for example <code>tool.TicketLookup.myFunc()</code>.</p>
+        <p>Registered tools are callable by the agent as <code>tool.&lt;ModuleName&gt;.&lt;toolName&gt;()</code> — for example <code>tool.TicketLookup.lookupTicket()</code>.</p>
 
-        <h3>Compiled output</h3>
-        <p><code>compile()</code> returns the same plain-text <code>.gneol</code> format documented in this reference:</p>
-<pre><code>program("Support Triage")
-  .model("billing-model")
+        <h3>Server and Module</h3>
+        <p>Beyond program authoring, the package exports <code>Server</code> (hosts one or more <code>Module</code> instances over a socket) and <code>execAsync</code> (a promise wrapper around shell execution).</p>
+<pre><code>import { Server, Module } from "gneol-sdk";
 
-model("billing-model")
-  .provider("openrouter")
-  .modelId("openai/gpt-4o-mini")
-  .apiKey("OPENROUTER_API_KEY")
-  .temperature(0.1)
-  .maxTokens(1024)
+const server = new Server();            // new Server(url?, scid?)
+const events = await server.serve(4000, [modA, modB]);
+await server.close();</code></pre>
 
-subagent("BillingBot")
-  .model("billing-model")
-  .description("Handles payment, refund, and invoice inquiries.")
-
-at("every:30min")
-  .do("Run escalation check for tickets older than 4 hours.")
-  .subagent("BillingBot")
-  .max(48)</code></pre>
-        <p><code>save()</code> persists the program to the store, and <code>deploy()</code> writes the file to disk and runs <code>gneol deploy -f &lt;file&gt;</code>. Before deploying, log <code>program.compile()</code> to inspect the generated script — it is the fastest way to catch a mistake.</p>
-
-        <h3>Storage</h3>
-        <p>With <code>store: 'file'</code>, programs are persisted as <code>&lt;id&gt;.json</code> in the configured directory. To use a custom backend (Redis, SQLite, Postgres, etc.), implement the <code>Database</code> interface and pass it straight in — a mock also lets you test SDK logic without persistence.</p>
-<pre><code>interface Database {
-  get(key: string): Promise&lt;any&gt;;
-  set(key: string, value: any): Promise&lt;void&gt;;
-  delete(key: string): Promise&lt;void&gt;;
-  list(): Promise&lt;string[]&gt;;
-}
-
-const sdk = new Gneol({ store: myDatabase });</code></pre>
-        <p>For versioning, keep your SDK source and compiled <code>.gneol</code> output under version control. To roll back, check out the previous version and re-run <code>program.deploy()</code>.</p>
+        <h3>What is on disk</h3>
+        <p>A <code>Program</code> holds its directives in memory. <code>save()</code> serializes them and shells out to <code>gneol convert</code> to write the <code>.gneol</code> file at the path given to the constructor. <code>deploy(outputPath?)</code> does the same conversion — optionally to a different path — and then runs <code>gneol deploy -f &lt;path&gt;</code>.</p>
+        <p>Keep your SDK source and the generated <code>.gneol</code> file under version control (for example git). To roll back, check out the previous version and re-run <code>program.deploy()</code>.</p>
         <p><a href="https://www.npmjs.com/package/gneol-sdk" target="_blank" rel="noopener">Read the full SDK guide on npm</a></p>
-
-        
 </div>
-</main>
+
+      </main>
 
     <script>
       // Docs navigation — show one section at a time

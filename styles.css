@@ -471,3 +471,11 @@ pre {
   padding: 4px 8px;
   font-size: 0.76rem;
 }
+
+/* Community — stay in the loop */
+.community {
+  border-top: 1px solid var(--border);
+}
+.community .section-inner {
+  padding: 56px 24px;
+}

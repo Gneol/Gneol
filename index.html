@@ -265,7 +265,7 @@
         <h2 class="section-title">Gneol SDK</h2>
         <p class="section-sub">
           Everything a <code>.gneol</code> file can do, as a typed TypeScript
-          API. Compose the program in code, compile to the same plain-text
+          API. Compose the program in code, write the same plain-text
           format, deploy with the CLI.
         </p>
         <div class="about-grid">
@@ -280,7 +280,7 @@
             <div class="sdk-accessors">
               <code>program.header</code>
               <code>program.models</code>
-              <code>program.subagents</code>
+              <code>program.sentinels</code>
               <code>program.triggers</code>
               <code>program.tools</code>
               <code>program.mcp</code>
@@ -288,10 +288,9 @@
               <code>program.imports</code>
             </div>
             <p>
-              <code>compile()</code> returns the <code>.gneol</code> source,
-              <code>save()</code> persists it to the store, and
-              <code>deploy()</code> writes the file to disk and runs
-              <code>gneol deploy -f</code>.
+              <code>save()</code> writes the <code>.gneol</code> file and
+              <code>deploy()</code> runs
+              <code>gneol deploy -f</code> on it.
             </p>
             <p>
               <a
@@ -321,10 +320,10 @@
                 >
                 <span class="terminal-title">support-triage.ts</span>
               </div>
-              <pre class="terminal-body"><code><span class="t-key">import</span> { Gneol } <span class="t-key">from</span> <span class="t-str">"gneol-sdk"</span>;
+              <pre class="terminal-body"><code><span class="t-key">import</span> { Program } <span class="t-key">from</span> <span class="t-str">"gneol-sdk"</span>;
 
-<span class="t-key">const</span> sdk = <span class="t-key">new</span> Gneol({ store: <span class="t-str">"file"</span>, path: <span class="t-str">"./programs"</span> });
-<span class="t-key">const</span> program = <span class="t-key">await</span> sdk.program.fetch(<span class="t-str">"support-triage"</span>);
+<span class="t-dim">// point at the .gneol file you want to build</span>
+<span class="t-key">const</span> program = <span class="t-key">new</span> Program(<span class="t-str">"./support-triage.gneol"</span>);
 
 program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <span class="t-str">"fast-llm"</span> });
 
@@ -335,7 +334,7 @@ program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <
   apiKey: <span class="t-str">"OPENROUTER_API_KEY"</span>,
 });
 
-<span class="t-key">await</span> program.subagents.create({
+<span class="t-key">await</span> program.sentinels.create({
   name: <span class="t-str">"BillingBot"</span>,
   model: <span class="t-str">"fast-llm"</span>,
   description: <span class="t-str">"Handles payment and refund inquiries."</span>,
@@ -344,14 +343,25 @@ program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <
 <span class="t-key">await</span> program.triggers.create({
   timeExpr: <span class="t-str">"every:30min"</span>,
   do: [<span class="t-str">"Run escalation check for stalled tickets."</span>],
-  subagent: <span class="t-str">"BillingBot"</span>,
+  sentinel: <span class="t-str">"BillingBot"</span>,
 });
 
-<span class="t-dim">// compiles to the same .gneol file you would write by hand</span>
+<span class="t-dim">// writes the same .gneol file you would write by hand</span>
+<span class="t-key">await</span> program.save();
 <span class="t-key">await</span> program.deploy(); <span class="t-dim">// → gneol deploy -f ./support-triage.gneol</span></code></pre>
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="community" class="community">
+      <div class="section-inner">
+        <h2 class="section-title">Stay in the loop</h2>
+        <p class="section-sub">
+          <a href="https://github.com/Gneol/Gneol" target="_blank" rel="noopener">Watch the repo on GitHub</a> to get notified about releases and updates. Found a bug or have a question?
+          <a href="mailto:tentarclesai@gmail.com?subject=Gneol%20feedback">Email us</a>.
+        </p>
       </div>
     </section>
 
