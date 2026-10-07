@@ -38,6 +38,59 @@ stop_running_gneol() {
   fi
 }
 
+# Download a file, rendering an ASCII progress bar on a TTY.
+download_with_progress() {
+  local url="$1" out="$2"
+  local width=28
+  local full empty total size pct filled prev rc
+
+  full=$(printf '%*s' "$width" '' | tr ' ' '#')
+  empty=$(printf '%*s' "$width" '' | tr ' ' '-')
+
+  # Non-interactive (curl | bash into a pipe, CI): no animation.
+  if [ ! -t 1 ]; then
+    curl -fsSL "$url" -o "$out"
+    return $?
+  fi
+
+  total=$(curl -sIL "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{v=$2} END{print v+0}')
+  [ -z "$total" ] && total=0
+
+  curl -fsSL "$url" -o "$out" &
+  local dlpid=$!
+
+  prev=-1
+  while kill -0 "$dlpid" 2>/dev/null; do
+    size=0
+    if [ -f "$out" ]; then
+      size=$(wc -c < "$out" 2>/dev/null | tr -d '[:space:]')
+      [ -z "$size" ] && size=0
+    fi
+    if [ "$total" -gt 0 ]; then
+      pct=$(( size * 100 / total ))
+      [ "$pct" -gt 100 ] && pct=100
+    else
+      pct=0
+    fi
+    if [ "$pct" != "$prev" ]; then
+      filled=$(( pct * width / 100 ))
+      printf '\r  [%s%s] %3d%%' "${full:0:filled}" "${empty:0:$(( width - filled ))}" "$pct"
+      prev=$pct
+    fi
+    sleep 0.2
+  done
+
+  rc=0
+  wait "$dlpid" || rc=$?
+
+  if [ "$rc" -eq 0 ]; then
+    printf '\r  [%s] 100%%\n' "$full"
+  else
+    printf '\n'
+  fi
+  return "$rc"
+}
+
 
 REPO="Gneol/Gneol"
 VERSION="latest"
@@ -94,29 +147,28 @@ trap 'rm -f "$TMP_ARCHIVE"' EXIT
 
 # Create install directory if needed
 if ! mkdir -p "$INSTALL_DIR" 2>/dev/null; then
-  echo "❌ Cannot create install directory: $INSTALL_DIR"
-  echo "   Re-run with sudo, or pick a writable dir: $0 --dir "$HOME/.local/bin""
+  echo "Cannot create install directory: $INSTALL_DIR"
+  echo "Re-run with sudo, or use: $0 --dir $HOME/.local/bin"
   exit 1
 fi
 if [ ! -w "$INSTALL_DIR" ]; then
-  echo "❌ No write permission for $INSTALL_DIR"
-  echo "   Re-run with sudo, or pick a writable dir: $0 --dir "$HOME/.local/bin""
+  echo "No write permission for $INSTALL_DIR"
+  echo "Re-run with sudo, or use: $0 --dir $HOME/.local/bin"
   exit 1
 fi
 
 # Download archive
 ARCHIVE_URL="$BASE_URL/$ARCHIVE"
-echo "  → $ARCHIVE"
-if ! curl -fsSL "$ARCHIVE_URL" -o "$TMP_ARCHIVE"; then
-  echo "❌ Failed to download $ARCHIVE_URL"
-  echo "   Verify release "$VERSION" exists and ships $ARCHIVE."
-  echo "   Releases: https://github.com/$REPO/releases"
+echo "Downloading $ARCHIVE"
+if ! download_with_progress "$ARCHIVE_URL" "$TMP_ARCHIVE"; then
+  echo "Failed to download $ARCHIVE_URL"
+  echo "Releases: https://github.com/$REPO/releases"
   exit 1
 fi
 
 # Validate the download before touching the install dir
 if ! tar -tzf "$TMP_ARCHIVE" >/dev/null 2>&1; then
-  echo "❌ Downloaded file is not a valid .tar.gz archive: $ARCHIVE"
+  echo "Invalid archive: $ARCHIVE"
   exit 1
 fi
 
@@ -125,17 +177,13 @@ tar -xzf "$TMP_ARCHIVE" -C "$INSTALL_DIR"
 
 # Verify the binary actually landed
 if [ ! -f "$INSTALL_DIR/gneol" ]; then
-  echo "❌ Extraction finished but no 'gneol' binary found in $INSTALL_DIR"
+  echo "No gneol binary found in $INSTALL_DIR"
   exit 1
 fi
 
 # Set permissions
 chmod +x "$INSTALL_DIR/gneol"
 
-echo ""
-echo "✅ Gneol installed!"
-echo "   gneol              → $INSTALL_DIR/gneol"
-echo ""
+echo "gneol installed: $INSTALL_DIR/gneol"
 echo "Run 'gneol --help' to get started."
-
 exit 0

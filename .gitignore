@@ -17,3 +17,6 @@ debug.json
 msg_sys.txt
 *.py
 *.bak
+GNEOL.md
+index.gneol
+.gneol/*
