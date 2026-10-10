@@ -140,6 +140,22 @@
         color: var(--text-dim);
       }
       .note strong { color: var(--text); }
+      .arch { text-align: center; margin: 20px 0; }
+      .arch-node {
+        display: inline-block;
+        border: 1px solid var(--border);
+        background: var(--bg-elev);
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        min-width: 150px;
+      }
+      .arch-node strong { display: block; color: var(--text); font-size: 0.78rem; letter-spacing: 0.6px; margin-bottom: 2px; }
+      .arch-server { border-color: var(--accent); box-shadow: 0 0 24px rgba(108,92,231,0.18); }
+      .arch-cols { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 14px; }
+      .arch-col { display: flex; flex-direction: column; align-items: center; }
+      .arch-arrow { color: var(--accent-2); line-height: 1; margin-bottom: 4px; font-size: 0.9rem; }
       @media (max-width: 820px) {
         .layout { grid-template-columns: 1fr; }
         .sidebar { display: none; }
@@ -188,10 +204,11 @@
         <a href="#installation">1. Installation</a>
         <a href="#getting-started">2. Getting Started</a>
         <a href="#architecture">3. Architecture</a>
-        <a href="#path-resolution">4. Path Resolution</a>
-        <a href="#installation-deployment">5. Installation &amp; Deployment</a>
-        <a href="#env-vars">6. Environment Variables</a>
-        <a href="#directives">7. Directives</a>
+        <a href="#program-model">4. Program Model</a>
+        <a href="#path-resolution">5. Path Resolution</a>
+        <a href="#installation-deployment">6. Installation &amp; Deployment</a>
+        <a href="#env-vars">7. Environment Variables</a>
+        <a href="#directives">8. Directives</a>
         <a href="#program">program()</a>
         <a href="#model">model()</a>
         <a href="#subagent">subagent()</a>
@@ -201,10 +218,10 @@
         <a href="#on">on() — Event Triggers</a>
         <a href="#tool">tool() — Custom Tools</a>
         <a href="#mcp">mcp() — MCP Servers</a>
-        <a href="#built-in-events">8. Built-in Events</a>
-        <a href="#troubleshooting">9. Troubleshooting</a>
-        <a href="#complete-example">10. Complete Example</a>
-        <a href="#sdk">11. Programmatic SDK (gneol-sdk)</a>
+        <a href="#built-in-events">9. Built-in Events</a>
+        <a href="#troubleshooting">10. Troubleshooting</a>
+        <a href="#complete-example">11. Complete Example</a>
+        <a href="#sdk">12. Programmatic SDK (gneol-sdk)</a>
       </nav>
 
       <main class="content">
@@ -253,7 +270,44 @@ gneol -a     # list and select an existing agent, then start chatting</code></pr
 <div class="doc-section" id="sec-architecture">
 <h2 id="architecture">
 Architecture</h2>
-        <p>Gneol programs describe a system of cooperating agents:</p>
+        <p>Gneol runs as a <strong>local background server</strong>. It holds all runtime state &mdash; souls, programs, models, tools, triggers, event buckets, and sessions &mdash; under <code>~/.gneol</code>, and listens on a local port (default <code>3999</code>). The <code>gneol</code> terminal command is a lightweight <strong>client</strong> that connects to that server. Keeping state in one place is what makes Gneol's system of cooperating agents work.</p>
+
+        <div class="arch">
+          <div class="arch-node arch-server">
+            <strong>GNEOL SERVER</strong>
+            local daemon &middot; state in ~/.gneol &middot; default port 3999
+          </div>
+          <div class="arch-cols">
+            <div class="arch-col">
+              <span class="arch-arrow">&#9650;</span>
+              <div class="arch-node"><strong>gneol</strong>CLI / terminal</div>
+            </div>
+          </div>
+        </div>
+
+        <p>Start the server explicitly:</p>
+<pre><code>gneol start           # start the local server (foreground)
+gneol start -d        # start it in the background and detach
+gneol start -p 4000   # listen on a custom port instead of 3999</code></pre>
+
+        <p>Check whether it is up with <code>gneol status</code>, and shut it down with <code>gneol stop</code>.</p>
+
+        <p>With the server running, calling <code>gneol</code> on its own starts an interactive session in the current directory.</p>
+
+        <h3>Programs</h3>
+        <p>When you run <code>gneol</code> in a directory that has no <code>index.gneol</code>, it asks how you would like to proceed and can create a starter program there. To deploy a program under any other name, point <code>deploy</code> at the file:</p>
+<pre><code>gneol deploy -f custom.gneol   # deploy a program with any name</code></pre>
+
+        <div class="note"><strong>Note:</strong> the server owns the runtime state, so a deployment is applied there rather than in your local directory.</div>
+
+        
+
+</div>
+
+<div class="doc-section" id="sec-program-model">
+<h2 id="program-model">
+Program Model</h2>
+        <p>Gneol programs describe a system of cooperating agents. For the client/server runtime that hosts them, see <a href="#architecture">Architecture</a>.</p>
         <ul>
           <li><strong>Program</strong> — a <code>.gneol</code> file. Defines models, subagents, triggers, tools, and MCP connections.</li>
           <li><strong>Agent</strong> — a worker spawned from the program header. Each agent has a name, traits, backstory, workspace, and a model.</li>
@@ -367,12 +421,16 @@ Directives</h2>
           <tr><td><code>.context("Label").text("static text")</code></td><td>Injects static context into the system message.</td></tr>
           <tr><td><code>.context("Label").resource("path/or/url")</code></td><td>Loads file/URL content into the system message.</td></tr>
           <tr><td><code>.id("agentId")</code></td><td>Explicitly sets the agent ID. Unless you know what you're doing, let it be auto-injected.</td></tr>
+          <tr><td><code>.avatar("path/or/url")</code></td><td>Sets the agent's avatar: a local <code>.glb</code> file path or an <code>http(s)://</code> URL pointing at a 3D model. Stored on the soul as <code>avatarUri</code>. Relative paths resolve against the program directory, preferring an <code>avatar/</code> subfolder when the file lives there.</td></tr>
         </table>
 <pre><code>program("My App")
   .model("fast-llm")
   .env(".env")
   .context("Policy").text("Never share internal keys.")
-  .context("FAQ").resource("./docs/faq.md")</code></pre>
+  .context("FAQ").resource("./docs/faq.md")
+  .avatar("src/avatar/Casual3_Female.glb")</code></pre>
+
+        <div class="note"><strong>Avatars:</strong> the model is served at <code>GET /avatar?id=&lt;soulId&gt;</code> &mdash; remote URLs get a <code>302</code> redirect, local <code>.glb</code> files are served directly as <code>model/gltf-binary</code>. Opening the avatar client with <code>?id=&lt;soulId&gt;</code> loads the model and registers its animation clips, which enables <code>Internal.fetchAvatarAnimations</code> and <code>Internal.animateAvatar</code>.</div>
 
         <h3 id="model">2. model()</h3>
         <p>Declares a model binding for a tag used by agents, subagents, or summarization.</p>
@@ -580,6 +638,7 @@ Complete Example</h2>
   .env(".env")
   .context("Policy").text("Never share internal keys.")
   .context("FAQ").resource("./docs/faq.md")
+  .avatar("src/avatar/Casual3_Female.glb")
 
 model("deepseek-v4-flash")
   .provider("openrouter")

@@ -49,12 +49,13 @@ gneol
 
 ## The .gneol File
 
-One plain-text file describes your entire agent: its model, subagents, scheduled triggers, event listeners, tools, and MCP servers. Deploying the file reconciles the runtime with your program — no manual setup.
+One plain-text file describes your entire agent: its model, avatar, subagents, scheduled triggers, event listeners, tools, and MCP servers. Deploying the file reconciles the runtime with your program — no manual setup.
 
 ```
 program("My App")
   .model("fast-llm")
   .context("Policy").text("Never share internal keys.")
+  .avatar("src/avatar/Casual3_Female.glb")   // local .glb or an http(s):// URL
 
 model("fast-llm")
   .provider("openrouter")
