@@ -67,14 +67,10 @@
                 ><span></span><span></span><span></span></span
               >
               <span class="terminal-title">bash — install</span>
+              <button class="copy-btn" id="install-copy" type="button">
+                Copy
+              </button>
             </div>
-            <pre class="terminal-body"><code><span class="t-prompt">$</span> curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash
-<span class="t-ok">✓</span> Gneol installed → /usr/local/bin/gneol
-
-<span class="t-prompt">$</span> gneol --version
-<span class="t-dim">gneol 1.0.0</span></code></pre>
-          </div>
-          <div class="install-block">
             <div class="install-tabs">
               <button class="tab active" data-tab="quick">
                 Quick install
@@ -83,10 +79,10 @@
               <button class="tab" data-tab="manual">Manual</button>
             </div>
             <div class="install-panel active" id="panel-quick">
-              <pre><code><span class="t-prompt">$</span> curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash</code></pre>
+              <pre><code data-copy="curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash"><span class="t-prompt">$</span> curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash</code></pre>
             </div>
             <div class="install-panel" id="panel-version">
-              <pre><code><span class="t-prompt">$</span> curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v1.0.0</code></pre>
+              <pre><code data-copy="curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v1.0.0"><span class="t-prompt">$</span> curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v1.0.0</code></pre>
             </div>
             <div class="install-panel" id="panel-manual">
               <pre><code><span class="t-dim"># Download from GitHub Releases:</span>
@@ -383,5 +379,7 @@ program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <
       </div>
 
 </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>

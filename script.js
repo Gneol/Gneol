@@ -29,6 +29,40 @@
     });
   }
 
+  // Copy-to-clipboard for the install command
+  var copyBtn = document.getElementById("install-copy");
+  function activeCopyText() {
+    var active = document.querySelector(".install-panel.active code[data-copy]");
+    return active ? active.getAttribute("data-copy") : "";
+  }
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var text = activeCopyText();
+      if (!text) return;
+      var done = function () {
+        copyBtn.textContent = "Copied";
+        copyBtn.classList.add("copied");
+        setTimeout(function () {
+          copyBtn.textContent = "Copy";
+          copyBtn.classList.remove("copied");
+        }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(done);
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(ta);
+        done();
+      }
+    });
+  }
+
   // Install tab switching
   var tabs = document.querySelectorAll(".tab");
   var panels = document.querySelectorAll(".install-panel");

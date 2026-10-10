@@ -296,6 +296,32 @@ pre {
 .terminal-title {
   font-size: 0.8rem;
   color: var(--text-dim);
+  flex: 1;
+}
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.copy-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.copy-btn.copied {
+  color: #9fe8a8;
+  border-color: #9fe8a8;
 }
 
 .terminal-body {
@@ -313,9 +339,11 @@ pre {
 /* --- install --- */
 .install-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 40px;
   align-items: start;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .install-block {
