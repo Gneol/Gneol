@@ -138,9 +138,10 @@
       <div class="section-inner">
         <h2 class="section-title">Deploy &amp; Run</h2>
         <p class="section-sub">
-          One command turns your file into a live agent. Gneol handles the
-          agentic loop — calling models, firing triggers, delegating to
-          subagents — so you just talk to it.
+          Bring your own <code>.gneol</code> file and deploy it — or run
+          <code>gneol</code> with no file at all and it scaffolds one for you.
+          Either way, Gneol handles the agentic loop — calling models, firing
+          triggers, delegating to subagents — so you just talk to it.
         </p>
         <div class="terminal">
           <div class="terminal-bar">
@@ -149,7 +150,8 @@
             >
             <span class="terminal-title">bash — deploy</span>
           </div>
-          <pre class="terminal-body"><code><span class="t-prompt">$</span> gneol deploy -f hello.gneol -i
+          <pre class="terminal-body"><code><span class="t-dim">// a .gneol file you wrote — deploy it directly</span>
+<span class="t-prompt">$</span> gneol deploy -f hello.gneol -i
 <span class="t-ok">✓</span> Deployed. Agent <span class="t-str">"Hello World"</span> is live.
 
 <span class="t-prompt">$</span> gneol
@@ -157,7 +159,13 @@
 <span class="t-ok">💬 Hello! I'm your Hello World agent — ask me anything.</span>
 
 <span class="t-dim">// close this terminal — the agent keeps running</span>
-<span class="t-prompt">$</span> gneol stop -f hello.gneol   <span class="t-dim"># stops the program</span></code></pre>
+<span class="t-prompt">$</span> gneol stop -f hello.gneol   <span class="t-dim"># stops the program</span>
+
+<span class="t-dim">// no file yet? gneol writes index.gneol for you</span>
+<span class="t-prompt">$</span> gneol
+<span class="t-dim">No index.gneol found. How would you like to proceed?</span>
+<span class="t-dim">❯ Create a new index.gneol</span>
+<span class="t-ok">✓</span> Created <span class="t-str">index.gneol</span> and <span class="t-str">GNEOL.md</span> — edit them, then deploy with <span class="t-str">gneol deploy</span>.</code></pre>
         </div>
       </div>
     </section>
