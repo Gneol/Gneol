@@ -13,7 +13,7 @@ curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash
 Install a specific version:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v1.0.0
+curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v0.2.5
 ```
 
 Or download a precompiled binary from the [Releases](https://github.com/Gneol/Gneol/releases) page.
@@ -44,6 +44,15 @@ gneol
 # Hello World ❯ hi there
 # 💬 Hello! I'm your Hello World agent — ask me anything.
 ```
+
+The program now runs inside the local runtime, not inside your terminal. Closing the terminal does not stop it — scheduled triggers and event listeners stay live until you stop the program:
+
+```bash
+gneol stop -f hello.gneol   # stop one program
+gneol stop                  # shut down the whole runtime
+```
+
+Nothing auto-starts on reboot, so after a restart run `gneol start -d` (or any `gneol` command) to bring the runtime back.
 
 ---
 
