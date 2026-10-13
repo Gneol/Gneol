@@ -80,4 +80,15 @@
       if (panel) panel.classList.add("active");
     });
   });
+
+  // Demo video: first click enables sound + controls
+  var demoVideo = document.getElementById("demo-video");
+  if (demoVideo) {
+    demoVideo.addEventListener("click", function () {
+      if (!demoVideo.controls) {
+        demoVideo.controls = true;
+        demoVideo.muted = false;
+      }
+    });
+  }
 })();

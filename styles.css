@@ -196,6 +196,29 @@ pre {
 }
 
 /* --- sections --- */
+
+/* --- demo --- */
+.demo .section-inner {
+  padding: 8px 24px 0;
+}
+
+.demo-frame {
+  max-width: 720px;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  padding: 8px;
+  box-shadow: 0 0 24px rgba(108, 92, 231, 0.12);
+}
+
+.demo-frame video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  cursor: pointer;
+}
+
 .section-inner {
   max-width: 1080px;
   margin: 0 auto;
