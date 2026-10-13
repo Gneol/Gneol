@@ -294,8 +294,8 @@ gneol start -p 4000   # listen on a custom port instead of 3999</code></pre>
 
         <p><strong>Programs outlive the terminal.</strong> Once deployed, a program runs inside the detached runtime — closing your terminal does not stop your agents, scheduled triggers, or event listeners. Programs only stop when you ask them to, or when the machine they run on shuts down.</p>
 
-<pre><code>gneol stop -f hello.gneol   # stop one program, leave the runtime up
-gneol stop                  # shut down the whole runtime</code></pre>
+<pre><code>gneol stop -f hello.gneol   # stops the program
+gneol stop                  # stops the runtime</code></pre>
 
         <p>Nothing is registered to auto-start on reboot, so after a restart bring the runtime back with <code>gneol start -d</code> — or simply run any <code>gneol</code> command, which starts it for you if it is not already listening.</p>
 
@@ -375,7 +375,7 @@ gneol deploy -f path/to/file.gneol -w       # watch the file and redeploy on sav
           <tr><td><code>gneol secrets &lt;action&gt; [key] [value]</code></td><td>Manage encrypted API key store (<code>list</code>, <code>get</code>, <code>set</code>, <code>delete</code>).</td></tr>
           <tr><td><code>gneol convert</code></td><td>Convert <code>.gneol</code> to/from JSON or YAML.</td></tr>
           <tr><td><code>gneol rollback [target]</code></td><td>Rollback a previous deployment or resource change.</td></tr>
-          <tr><td><code>gneol stop -f &lt;file&gt;</code></td><td>Stop a single program runtime, leaving the server running.</td></tr>
+          <tr><td><code>gneol stop -f &lt;file&gt;</code></td><td>Stop a single program.</td></tr>
           <tr><td><code>gneol stop</code></td><td>Stop the whole runtime.</td></tr>
           <tr><td><code>gneol -a</code></td><td>List and select an existing agent, then start chatting.</td></tr>
         </table>
