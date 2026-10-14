@@ -13,7 +13,7 @@ curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash
 Install a specific version:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v0.2.5
+curl -sSL https://raw.githubusercontent.com/Gneol/Gneol/main/install.sh | bash -s -- --version v0.3.0
 ```
 
 Or download a precompiled binary from the [Releases](https://github.com/Gneol/Gneol/releases) page.

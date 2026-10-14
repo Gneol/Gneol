@@ -93,7 +93,7 @@ download_with_progress() {
 
 INSTALL_DIR="$HOME/.local/bin"
 REPO="Gneol/Gneol"
-VERSION="${GNEOL_VERSION:-v0.2.5}"
+VERSION="${GNEOL_VERSION:-v0.3.0}"
 ARCHIVE="gneol-linux-x64.tar.gz"
 URL="https://github.com/${REPO}/releases/download/${VERSION}/${ARCHIVE}"
 
