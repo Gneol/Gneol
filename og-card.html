@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
-
+<head>
 <meta charset="utf-8" />
-
-  @font-face { font-family: 'OGMono'; src: local('SFMono-Bold'), local('SF Mono Bold'), local('Menlo Bold'), local('Menlo'); font-weight: 400 700; }
+<title>Gneol OG card</title>
+<style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 1200px; height: 630px; overflow: hidden; }
   body {
@@ -12,42 +12,20 @@
     font-family: "SF Mono", "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
     position: relative;
   }
-  .glow-a {
-    position: absolute; width: 760px; height: 760px;
-    left: -240px; top: -330px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(108,92,231,0.46) 0%, rgba(108,92,231,0) 68%);
-  }
-  .glow-b {
-    position: absolute; width: 680px; height: 680px;
-    right: -190px; bottom: -300px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,217,245,0.24) 0%, rgba(0,217,245,0) 68%);
-  }
+  .glow-a { position: absolute; width: 760px; height: 760px; left: -240px; top: -330px; border-radius: 50%; background: radial-gradient(circle, rgba(108,92,231,0.46) 0%, rgba(108,92,231,0) 68%); }
+  .glow-b { position: absolute; width: 680px; height: 680px; right: -190px; bottom: -300px; border-radius: 50%; background: radial-gradient(circle, rgba(0,217,245,0.24) 0%, rgba(0,217,245,0) 68%); }
   .grid {
     position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(31,31,46,0.9) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(31,31,46,0.9) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(31,31,46,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(31,31,46,0.9) 1px, transparent 1px);
     background-size: 48px 48px;
     -webkit-mask-image: radial-gradient(ellipse at 46% 42%, #000 18%, transparent 76%);
     mask-image: radial-gradient(ellipse at 46% 42%, #000 18%, transparent 76%);
   }
-  .edge {
-    position: absolute; inset: 26px;
-    border: 1px solid #1f1f2e; border-radius: 16px;
-  }
-  .content {
-    position: relative; z-index: 2;
-    display: flex; flex-direction: column; justify-content: center;
-    height: 100%; padding: 0 84px;
-  }
+  .edge { position: absolute; inset: 26px; border: 1px solid #1f1f2e; border-radius: 16px; }
+  .content { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; height: 100%; padding: 0 84px; }
   .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
-  .dot {
-    width: 12px; height: 12px; border-radius: 50%; background: #00d9f5;
-    box-shadow: 0 0 20px rgba(0,217,245,0.95);
-  }
-  .brand-name {
-    font-size: 21px; letter-spacing: 6px; text-transform: uppercase; color: #8f8fa3;
-  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: #00d9f5; box-shadow: 0 0 20px rgba(0,217,245,0.95); }
+  .brand-name { font-size: 21px; letter-spacing: 6px; text-transform: uppercase; color: #8f8fa3; }
   h1 {
     font-size: 138px; line-height: 0.92; letter-spacing: -5px; font-weight: 700;
     background: linear-gradient(96deg, #ffffff 6%, #c9c2ff 46%, #7be6f8 100%);
@@ -55,32 +33,28 @@
     -webkit-text-fill-color: transparent;
     margin-bottom: 26px;
   }
-  .sub {
-    font-size: 29px; line-height: 1.45; color: #a3a3b9; max-width: 900px; margin-bottom: 44px;
-  }
-  .sub b { color: #e4e4e7; font-weight: 600; }
+  .sub { font-size: 29px; line-height: 1.45; color: #a3a3b9; max-width: 900px; margin-bottom: 44px; }
   .term {
     display: inline-flex; align-items: center; gap: 15px;
     border: 1px solid #2a2a3d; background: rgba(18,18,26,0.94);
     border-radius: 10px; padding: 19px 28px; font-size: 25px;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-    width: fit-content;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6); width: fit-content;
   }
   .prompt { color: #00d9f5; font-weight: 700; }
   .cmd { color: #e4e4e7; }
   .caret { width: 11px; height: 26px; background: #6c5ce7; display: inline-block; }
-
-
-
-  <div class="glow-a">
-  <div class="glow-b">
-  <div class="grid">
-  <div class="edge">
+</style>
+</head>
+<body>
+  <div class="glow-a"></div>
+  <div class="glow-b"></div>
+  <div class="grid"></div>
+  <div class="edge"></div>
   <div class="content">
-    <div class="brand"><span class="dot"><span class="brand-name">Gneol Runtime
+    <div class="brand"><span class="dot"></span><span class="brand-name">Gneol Runtime</span></div>
     <h1>Gneol</h1>
-    <p class="sub">Describe your AI program in one plain-text file. Deploy it with one command. No server, no database &mdash; just one binary.
-    <div class="term"><span class="prompt">$<span class="cmd">gneol deploy -f index.gneol<span class="caret">
-  
-
-
+    <p class="sub">Describe your AI program in one plain-text file. Deploy it with one command. No server, no database &mdash; just one binary.</p>
+    <div class="term"><span class="prompt">$</span><span class="cmd">gneol deploy -f index.gneol</span><span class="caret"></span></div>
+  </div>
+</body>
+</html>
