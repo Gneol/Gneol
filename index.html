@@ -19,13 +19,15 @@
       property="og:description"
       content="Describe your AI program in one plain-text file. Deploy it with one command."
     />
-    <meta
-      property="og:image"
-      content="https://gneol.github.io/media/og-card.png"
-    />
+    <meta property="og:image" content="https://gneol.github.io/media/og-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Gneol — a runtime for .gneol files, one binary" />
+    <meta property="og:site_name" content="Gneol" />
 
     <!-- Add Twitter Card Fallbacks too -->
     <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" type="application/rss+xml" title="Gneol Updates" href="https://github.com/Gneol/Gneol/releases.atom" />
     <meta
       name="twitter:image"
       content="https://gneol.github.io/media/og-card.png"
@@ -418,6 +420,12 @@ program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <
             >Watch the repo on GitHub</a
           >
           to get notified about releases and updates. Found a bug or have a
+        <div class="community-badges">
+          <a href="https://microhunts.com/projects/gneol?utm_source=badge" target="_blank" rel="noopener noreferrer">
+            <img src="https://microhunts.com/microhunts/images/badges/featured-on-light.svg" alt="Featured on Micro Hunts" style="height:44px;width:auto"/>
+          </a>
+        </div>
+
           question?
           <a href="mailto:tentarclesai@gmail.com?subject=Gneol%20feedback"
             >Email us</a
