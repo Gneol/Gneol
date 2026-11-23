@@ -338,7 +338,7 @@ Program Model</h2>
           <li><strong>Tool</strong> — a function an agent can call. Built-ins come from the platform; custom ones come from <code>tool()</code> scripts or MCP servers.</li>
           <li><strong>MCP Server</strong> — an external Model Context Protocol server whose tools become callable by agents.</li>
         </ul>
-        <p>A deployed program creates a root agent. It can dispatch work to its subagents (e.g., via trigger routing with <code>.sentinel("Name")</code>).</p>
+        <p>A deployed program creates a root agent. It can dispatch work to its subagents (e.g., via trigger routing with <code>.subagent("Name")</code>).</p>
 
         
 </div>
@@ -483,7 +483,7 @@ model("eagle-eye")
   .maxTokens(4000)</code></pre>
 
         <h3 id="subagent">3. subagent()</h3>
-        <p>Declares a specialized child agent. (The older <code>sentinel()</code> keyword is deprecated — use <code>subagent()</code> directly in new programs; the example below shows the modern form.)</p>
+        <p>Declares a specialized child agent. (The older <code>subagent()</code> keyword is deprecated — use <code>subagent()</code> directly in new programs; the example below shows the modern form.)</p>
 <pre><code>subagent("Name")</code></pre>
         <table>
           <tr><th>Sub-function</th><th>Description</th></tr>
@@ -496,7 +496,7 @@ model("eagle-eye")
 <pre><code>subagent("Marcus")
   .model("eagle-eye")
   .description("CI monitoring specialist")
-  .backstory("You are a CI sentinel. Watch pipelines and report failures.")</code></pre>
+  .backstory("You are a CI subagent. Watch pipelines and report failures.")</code></pre>
         <p>A wildcard declaration applies its model to all subagents that don't declare one:</p>
 <pre><code>subagent().model("deepseek-v4-flash")</code></pre>
 
@@ -543,7 +543,7 @@ model("shared-model")
           <tr><td><code>.resource("path")</code></td><td>Attach file/URL context to the action.</td></tr>
           <tr><td><code>.if("condition text")</code></td><td>LLM-evaluated condition; action only runs if true.</td></tr>
           <tr><td><code>.ifExec("script", "operator", "expected")</code></td><td>Runs a shell script and compares stdout to expected. Operators: <code>eq</code> (default), <code>lt</code>, <code>gt</code>, <code>contains</code>. Two-arg form uses <code>eq</code>.</td></tr>
-          <tr><td><code>.sentinel("name")</code></td><td>Route the action to a subagent (deprecated alias).</td></tr>
+          <tr><td><code>.subagent("name")</code></td><td>Route the action to a subagent (deprecated alias).</td></tr>
           <tr><td><code>.modify()</code></td><td>Tag for review.</td></tr>
         </table>
 <pre><code>at("every:10min")
@@ -560,7 +560,7 @@ model("shared-model")
   .max(5)</code></pre>
 
         <h3 id="on">7. on() — Event-Based Triggers</h3>
-        <p>Fires when an event is received. Events are pushed to the agent via the platform; see <a href="#built-in-events">Built-in Events</a>. (The <code>.sentinel("name")</code> routing option below is a deprecated alias for routing to a subagent — use the subagent's name directly.)</p>
+        <p>Fires when an event is received. Events are pushed to the agent via the platform; see <a href="#built-in-events">Built-in Events</a>. (The <code>.subagent("name")</code> routing option below is a deprecated alias for routing to a subagent — use the subagent's name directly.)</p>
 <pre><code>on("eventName")</code></pre>
         <table>
           <tr><th>Sub-function</th><th>Description</th></tr>
@@ -569,7 +569,7 @@ model("shared-model")
           <tr><td><code>.do("message")</code></td><td>Action message. Chainable: <code>.do("a").do("b")</code>.</td></tr>
           <tr><td><code>.resource("path")</code></td><td>Attach file/URL context.</td></tr>
           <tr><td><code>.if("condition text")</code></td><td>LLM-evaluated condition.</td></tr>
-          <tr><td><code>.sentinel("name")</code></td><td>Route to a subagent (deprecated alias).</td></tr>
+          <tr><td><code>.subagent("name")</code></td><td>Route to a subagent (deprecated alias).</td></tr>
           <tr><td><code>.modify()</code></td><td>Tag for review.</td></tr>
           <tr><td><code>.max(N)</code></td><td>Max triggers before auto-stop (global limit).</td></tr>
         </table>
@@ -578,7 +578,7 @@ model("shared-model")
   .delay(10)
   .if("Latest CI passed")
   .do("Run deployment.")
-  .sentinel("Marcus")</code></pre>
+  .subagent("Marcus")</code></pre>
 
         <h3 id="tool">8. tool() — Custom Tool Scripts</h3>
         <p>Declares a custom tool module from a worker script.</p>
@@ -679,7 +679,7 @@ model("eagle-eye")
 
 subagent("Marcus")
   .model("eagle-eye")
-  .description("CI sentinel")
+  .description("CI subagent")
 
 subagent().model("deepseek-v4-flash")
 
@@ -748,7 +748,7 @@ await program.models.create({
 });
 
 // 4. Declare a subagent
-await program.sentinels.create({
+await program.subagents.create({
   name: "BillingBot",
   model: "fast-llm",
   description: "Handles payment, refund, and invoice inquiries.",
@@ -758,7 +758,7 @@ await program.sentinels.create({
 await program.triggers.create({
   timeExpr: "every:30min",
   do: ["Run escalation check for tickets older than 4 hours."],
-  sentinel: "BillingBot",
+  subagent: "BillingBot",
   max: 48, // 48 runs x 30min = 24 hours of coverage
 });
 
@@ -772,7 +772,7 @@ await program.deploy(); // → gneol deploy -f ./support-triage.gneol</code></pr
           <tr><th>Directive</th><th>Accessor</th><th>Methods</th></tr>
           <tr><td>Header</td><td><code>program.header</code></td><td><code>.set()</code>, <code>.get()</code>, <code>.clear()</code></td></tr>
           <tr><td>Model</td><td><code>program.models</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
-          <tr><td>Subagent</td><td><code>program.sentinels</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
+          <tr><td>Subagent</td><td><code>program.subagents</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
           <tr><td>Summarization</td><td><code>program.summarizations</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
           <tr><td>Tool</td><td><code>program.tools</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
           <tr><td>MCP server</td><td><code>program.mcp</code></td><td><code>.create()</code>, <code>.get()</code>, <code>.list()</code>, <code>.update()</code>, <code>.delete()</code>, <code>.clear()</code></td></tr>
@@ -815,8 +815,8 @@ await program.summarizations.create({
 // Shared .gneol fragments
 program.imports.add("shared/escalation-policies.gneol");</code></pre>
 
-        <h3>Naming: subagents and sentinels</h3>
-        <p>The SDK keeps the original TypeScript names: the accessor is <code>program.sentinels</code> and the trigger routing field is <code>sentinel</code>. In the generated <code>.gneol</code> text both appear as <code>subagent()</code>, matching the directive documented in this reference — so <code>program.sentinels.create({ name: "BillingBot", ... })</code> plus <code>{ sentinel: "BillingBot" }</code> on a trigger produces <code>subagent("BillingBot")</code> and routes the action to it.</p>
+        <h3>Naming: subagents and subagents</h3>
+        <p>The SDK keeps the original TypeScript names: the accessor is <code>program.subagents</code> and the trigger routing field is <code>subagent</code>. In the generated <code>.gneol</code> text both appear as <code>subagent()</code>, matching the directive documented in this reference — so <code>program.subagents.create({ name: "BillingBot", ... })</code> plus <code>{ subagent: "BillingBot" }</code> on a trigger produces <code>subagent("BillingBot")</code> and routes the action to it.</p>
 
         <h3>Custom tool scripts</h3>
         <p>The script referenced by <code>tool()</code> <code>.script()</code> (see <a href="#tool">tool() — Custom Tool Scripts</a>) is a worker module built with the SDK's <code>Module</code> class. Each <code>.tool()</code> definition declares its input and output schemas with <code>zod</code>, plus optional <code>action</code> (a log line forwarded to the session stream) and <code>auth</code> (permission gate) hooks.</p>

@@ -331,7 +331,7 @@
             <div class="sdk-accessors">
               <code>program.header</code>
               <code>program.models</code>
-              <code>program.sentinels</code>
+              <code>program.subagents</code>
               <code>program.triggers</code>
               <code>program.tools</code>
               <code>program.mcp</code>
@@ -388,7 +388,7 @@ program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <
   apiKey: <span class="t-str">"OPENROUTER_API_KEY"</span>,
 });
 
-<span class="t-key">await</span> program.sentinels.create({
+<span class="t-key">await</span> program.subagent.create({
   name: <span class="t-str">"BillingBot"</span>,
   model: <span class="t-str">"fast-llm"</span>,
   description: <span class="t-str">"Handles payment and refund inquiries."</span>,
@@ -397,7 +397,7 @@ program.header.set({ name: <span class="t-str">"Support Triage"</span>, model: <
 <span class="t-key">await</span> program.triggers.create({
   timeExpr: <span class="t-str">"every:30min"</span>,
   do: [<span class="t-str">"Run escalation check for stalled tickets."</span>],
-  sentinel: <span class="t-str">"BillingBot"</span>,
+  subagent: <span class="t-str">"BillingBot"</span>,
 });
 
 <span class="t-dim">// writes the same .gneol file you would write by hand</span>
